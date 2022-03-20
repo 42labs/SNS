@@ -44,7 +44,8 @@ func assert_name_is_label_dotstark{range_check_ptr}(name : String):
 
     assert_character_is_lowercase_alphabet{range_check_ptr=range_check_ptr_unrevoked}([name.start])
 
-    return assert_name_is_label_dotstark{range_check_ptr=range_check_ptr_unrevoked}(String(start=name.start + String.SIZE, len=name.len-1))
+    return assert_name_is_label_dotstark{range_check_ptr=range_check_ptr_unrevoked}(
+        String(start=name.start + String.SIZE, len=name.len - 1))
 end
 
 func hash_name{pedersen_ptr : HashBuiltin*}(name : String) -> (namehash : felt):

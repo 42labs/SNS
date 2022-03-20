@@ -16,13 +16,15 @@ func record(namehash : felt) -> (record : Record):
 end
 
 @view
-func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(namehash : felt) -> (resolver_addr : felt):
+func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt) -> (resolver_addr : felt):
     let (res) = record.read(namehash)
     return (res.resolver_addr)
 end
 
 @view
-func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name_len : felt, name : felt*) -> (resolver_addr : felt):
+func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*) -> (resolver_addr : felt):
     alloc_locals
 
     local range_check_ptr_unrevoked = range_check_ptr
@@ -37,7 +39,8 @@ func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
 end
 
 @external
-func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(namehash : felt, address : felt):
+func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt, address : felt):
     let (res) = record.read(namehash)
     assert res.owner_addr = address
 
@@ -45,7 +48,8 @@ func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @external
-func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt):
+func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt):
     alloc_locals
 
     local range_check_ptr_unrevoked = range_check_ptr
