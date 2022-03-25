@@ -10,9 +10,18 @@ namespace IRegistryContract:
     func get_resolver_by_name(name_len : felt, name : felt*) -> (resolver_addr : felt):
     end
 
-    func register(name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt):
+    func register(
+            name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt,
+            registration_years : felt):
     end
 
     func assert_owner(namehash : felt, address : felt):
+    end
+
+    func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            name_len : felt, name : felt*, new_owner_addr : felt):
+    end
+
+    func update_resolver{}(name_len : felt, name : felt*, new_resolver_addr : felt):
     end
 end

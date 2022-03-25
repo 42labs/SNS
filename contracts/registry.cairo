@@ -1,24 +1,38 @@
 %lang starknet
 
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_block_timestamp
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import assert_nn_le
 
 from utils.string import String
 from utils.name import hash_name, assert_name_is_label_dotstark
 
+const MAX_REGISTRATION_YEARS = 10
+const SECONDS_IN_YEAR = 31536000  # Messes up leap year etc - Can use hint + python library to do this?
+
 struct Record:
-    member owner_addr : felt
+    member owner_addr : felt  # Need to verify that this is an account contract?
     member resolver_addr : felt
+    member expiry_timestamp : felt
 end
 
 @storage_var
 func record(namehash : felt) -> (record : Record):
 end
 
+func assert_record_is_not_expired{syscall_ptr : felt*, range_check_ptr}(res : Record):
+    let (current_timestamp) = get_block_timestamp()
+    assert_nn_le(current_timestamp, res.expiry_timestamp)
+    ret
+end
+
 @view
 func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         namehash : felt) -> (resolver_addr : felt):
     let (res) = record.read(namehash)
+
+    assert_record_is_not_expired(res)
+
     return (res.resolver_addr)
 end
 
@@ -42,32 +56,90 @@ end
 func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         namehash : felt, address : felt):
     let (res) = record.read(namehash)
+
+    assert_record_is_not_expired(res)
+
     assert res.owner_addr = address
 
-    return ()
+    ret
+end
+
+func assert_caller_is_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt):
+    let (caller_addess) = get_caller_address()
+    assert_owner(namehash, caller_addess)
+    ret
 end
 
 @external
 func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt):
+        name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt,
+        registration_years : felt):
     alloc_locals
 
     local range_check_ptr_unrevoked = range_check_ptr
-    let name_str = String(start=name, len=name_len)
 
-    assert_name_is_label_dotstark(name_str)
+    # Validate inputs
+    let name_str = String(start=name, len=name_len)
+    assert_name_is_label_dotstark{range_check_ptr=range_check_ptr_unrevoked}(name_str)
+    assert_nn_le{range_check_ptr=range_check_ptr_unrevoked}(
+        registration_years, MAX_REGISTRATION_YEARS)
+    # TODO: Assert owner is account contract?
+    # TODO: Assert registry address conforms to contract interface?
 
     let (namehash) = hash_name(name_str)
-
     let (res) = record.read(namehash)
     let (caller_address) = get_caller_address()
 
-    # Either previous owner did not exist, or caller is previous owner
-    assert (res.owner_addr) * (caller_address - res.owner_addr) = 0
+    # Assert previous owner does not exist or the domain is expired
+    assert_nn_le(current_timestamp * res.owner_addr, res.expiry_timestamp)
 
-    let new_res = Record(owner_addr=owner_addr, resolver_addr=resolver_addr)
+    # Create or update entry
+    let (current_timestamp) = get_block_timestamp()
+    let expiry_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
+    let new_res = Record(
+        owner_addr=owner_addr, resolver_addr=resolver_addr, expiry_timestamp=expiry_timestamp)
 
     record.write(namehash, new_res)
 
-    return ()
+    ret
+end
+
+@external
+func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*, new_owner_addr : felt):
+    let name_str = String(start=name, len=name_len)
+    let (namehash) = hash_name(name_str)
+    assert_caller_is_owner(namehash)
+
+    let (res) = record.read(namehash)
+
+    # TODO: Assert new owner is account contract?
+
+    let new_res = Record(
+        owner_addr=new_owner_addr,
+        resolver_addr=res.resolver_addr,
+        expiry_timestamp=res.expiry_timestamp)
+    record.write(namehash, new_res)
+
+    ret
+end
+
+@external
+func update_resolver{}(name_len : felt, name : felt*, new_resolver_addr : felt):
+    let name_str = String(start=name, len=name_len)
+    let (namehash) = hash_name(name_str)
+    assert_caller_is_owner(namehash)
+
+    let (res) = record.read(namehash)
+
+    # TODO: Assert registry address conforms to contract interface
+
+    let new_res = Record(
+        owner_addr=res.owner_addr,
+        resolver_addr=new_resolver_addr,
+        expiry_timestamp=res.expiry_timestamp)
+    record.write(namehash, new_res)
+
+    ret
 end
