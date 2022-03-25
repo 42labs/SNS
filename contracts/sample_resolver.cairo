@@ -12,7 +12,9 @@ const REGISTRY_CONTRACT_ADDRESS = 0x0  # TODO
 
 @external
 func assert_supports_interface(interface_hash : felt) -> (res : felt):
-    assert interface_hash == STARKNET_ADDRESS_INTERFACE_HASH
+    with_attr error_message("Interface not supported"):
+        assert interface_hash == STARKNET_ADDRESS_INTERFACE_HASH
+    end
     ret
 end
 

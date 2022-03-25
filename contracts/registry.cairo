@@ -8,7 +8,10 @@ from utils.string import String
 from utils.name import hash_name, assert_name_is_label_dotstark
 
 const MAX_REGISTRATION_YEARS = 10
-const SECONDS_IN_YEAR = 31536000  # Messes up leap year etc - Can use hint + python library to do this?
+const SECONDS_IN_YEAR = 31556926
+# TODO Messes up leap year (365.24 days) - Can use hint + python library to do this?
+
+# STRUCTS
 
 struct Record:
     member owner_addr : felt  # Need to verify that this is an account contract?
@@ -16,15 +19,31 @@ struct Record:
     member expiry_timestamp : felt
 end
 
+# HELPER FUNCS
+
+func assert_record_is_not_expired{syscall_ptr : felt*, range_check_ptr}(res : Record):
+    let (current_timestamp) = get_block_timestamp()
+    with_attr error_message("Record is expired"):
+        assert_nn_le(current_timestamp, res.expiry_timestamp)
+    end
+
+    ret
+end
+
+func assert_caller_is_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt):
+    let (caller_addess) = get_caller_address()
+    assert_owner(namehash, caller_addess)
+    ret
+end
+
+# STORAGE
+
 @storage_var
 func record(namehash : felt) -> (record : Record):
 end
 
-func assert_record_is_not_expired{syscall_ptr : felt*, range_check_ptr}(res : Record):
-    let (current_timestamp) = get_block_timestamp()
-    assert_nn_le(current_timestamp, res.expiry_timestamp)
-    ret
-end
+# PUBLIC FUNCTIONS
 
 @view
 func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -59,15 +78,10 @@ func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 
     assert_record_is_not_expired(res)
 
-    assert res.owner_addr = address
+    with_attr error_message("Insufficient permission (not owner)."):
+        assert res.owner_addr = address
+    end
 
-    ret
-end
-
-func assert_caller_is_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        namehash : felt):
-    let (caller_addess) = get_caller_address()
-    assert_owner(namehash, caller_addess)
     ret
 end
 
@@ -90,12 +104,12 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     let (namehash) = hash_name(name_str)
     let (res) = record.read(namehash)
     let (caller_address) = get_caller_address()
+    let (current_timestamp) = get_block_timestamp()
 
-    # Assert previous owner does not exist or the domain is expired
+    # Check that previous owner does not exist or the domain is expired
     assert_nn_le(current_timestamp * res.owner_addr, res.expiry_timestamp)
 
     # Create or update entry
-    let (current_timestamp) = get_block_timestamp()
     let expiry_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
     let new_res = Record(
         owner_addr=owner_addr, resolver_addr=resolver_addr, expiry_timestamp=expiry_timestamp)
@@ -108,8 +122,10 @@ end
 @external
 func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         name_len : felt, name : felt*, new_owner_addr : felt):
+    alloc_locals
+
     let name_str = String(start=name, len=name_len)
-    let (namehash) = hash_name(name_str)
+    let (local namehash) = hash_name(name_str)
     assert_caller_is_owner(namehash)
 
     let (res) = record.read(namehash)
@@ -126,9 +142,12 @@ func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 end
 
 @external
-func update_resolver{}(name_len : felt, name : felt*, new_resolver_addr : felt):
+func update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*, new_resolver_addr : felt):
+    alloc_locals
+
     let name_str = String(start=name, len=name_len)
-    let (namehash) = hash_name(name_str)
+    let (local namehash) = hash_name(name_str)
     assert_caller_is_owner(namehash)
 
     let (res) = record.read(namehash)

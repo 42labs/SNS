@@ -18,10 +18,9 @@ namespace IRegistryContract:
     func assert_owner(namehash : felt, address : felt):
     end
 
-    func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            name_len : felt, name : felt*, new_owner_addr : felt):
+    func transfer_ownership(name_len : felt, name : felt*, new_owner_addr : felt):
     end
 
-    func update_resolver{}(name_len : felt, name : felt*, new_resolver_addr : felt):
+    func update_resolver(name_len : felt, name : felt*, new_resolver_addr : felt):
     end
 end
