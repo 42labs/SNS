@@ -3,7 +3,6 @@
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from utils.constants import TRUE, FALSE
 from utils.string import String
 from utils.name import hash_name
 from contracts.registry_interface import IRegistryContract
@@ -12,11 +11,9 @@ const STARKNET_ADDRESS_INTERFACE_HASH = 0x0  # TODO
 const REGISTRY_CONTRACT_ADDRESS = 0x0  # TODO
 
 @external
-func supports_interface(interface_hash : felt) -> (res : felt):
-    if interface_hash == STARKNET_ADDRESS_INTERFACE_HASH:
-        return (TRUE)
-    end
-    return (FALSE)
+func assert_supports_interface(interface_hash : felt) -> (res : felt):
+    assert interface_hash == STARKNET_ADDRESS_INTERFACE_HASH
+    ret
 end
 
 # Resolve .stark addresses
