@@ -52,7 +52,7 @@ func hash_name{pedersen_ptr : HashBuiltin*}(name : String) -> (namehash : felt):
     # Lowercase normalization
     # Hash by label, so that you can create hash for subdomain using hash of domain and string of subdomain?
     if name.len == 0:
-        return (0x0)
+        return (0)
     end
     let new_name = String(start=name.start + String.SIZE, len=name.len - 1)
     let (recursive_hash) = hash_name(new_name)
