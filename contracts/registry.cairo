@@ -8,12 +8,11 @@ from utils.name import hash_name, assert_name_is_label_dotstark
 
 const MAX_REGISTRATION_YEARS = 10
 const SECONDS_IN_YEAR = 31556926
-# TODO Messes up leap year (365.24 days) - Can use hint + python library to do this?
 
 # STRUCTS
 
 struct Record:
-    member owner_addr : felt  # Need to verify that this is an account contract?
+    member owner_addr : felt
     member resolver_addr : felt
     member expiry_timestamp : felt
 end
@@ -121,8 +120,6 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     # Validate inputs
     assert_name_is_label_dotstark(name_len, name)
     assert_nn_le(registration_years, MAX_REGISTRATION_YEARS)
-    # TODO: Assert owner is account contract?
-    # TODO: Assert registry address conforms to contract interface?
 
     let (namehash) = hash_name(name_len, name)
 
@@ -130,10 +127,10 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     let (caller_address) = get_caller_address()
     let (current_timestamp) = get_block_timestamp()
 
-    # # Check that previous owner does not exist or the domain is expired
+    # Check that previous owner does not exist or the domain is expired
     assert_nn_le(current_timestamp * res.owner_addr, res.expiry_timestamp)
 
-    # # Create or update entry
+    # Create or update entry
     let expiry_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
     let new_res = Record(
         owner_addr=owner_addr, resolver_addr=resolver_addr, expiry_timestamp=expiry_timestamp)
@@ -153,8 +150,6 @@ func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 
     let (res) = record.read(namehash)
 
-    # TODO: Assert new owner is account contract?
-
     let new_res = Record(
         owner_addr=new_owner_addr,
         resolver_addr=res.resolver_addr,
@@ -173,8 +168,6 @@ func update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
     assert_caller_is_owner(namehash)
 
     let (res) = record.read(namehash)
-
-    # TODO: Assert registry address conforms to contract interface
 
     let new_res = Record(
         owner_addr=res.owner_addr,
