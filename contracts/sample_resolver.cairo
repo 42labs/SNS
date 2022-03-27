@@ -3,54 +3,71 @@
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from utils.string import String
 from utils.name import hash_name
 from contracts.registry_interface import IRegistryContract
 
 const STARKNET_ADDRESS_INTERFACE_HASH = 0x0  # TODO
-const REGISTRY_CONTRACT_ADDRESS = 0x0  # TODO
 
 @external
-func assert_supports_interface(interface_hash : felt) -> (res : felt):
+func assert_supports_interface(interface_hash : felt):
     with_attr error_message("Interface not supported"):
-        assert interface_hash == STARKNET_ADDRESS_INTERFACE_HASH
+        assert interface_hash = STARKNET_ADDRESS_INTERFACE_HASH
     end
-    ret
+    return ()
 end
 
 # Resolve .stark addresses
 @storage_var
-func starknet_address(namehash : felt) -> (res : felt):
+func starknet_address_storage(namehash : felt) -> (starknet_address : felt):
+end
+
+@storage_var
+func registry_address_storage() -> (registry_address : felt):
+end
+
+@constructor
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        registry_address : felt):
+    registry_address_storage.write(value=registry_address)
+    return ()
+end
+
+@view
+func get_registry_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+        registry_address : felt):
+    let (registry_address) = registry_address_storage.read()
+    return (registry_address)
 end
 
 @view
 func get_starknet_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        namehash : felt) -> (res : felt):
-    let (res) = starknet_address.read(namehash)
-    return (res)
+        namehash : felt) -> (starknet_address : felt):
+    let (starknet_address) = starknet_address_storage.read(namehash)
+    return (starknet_address)
 end
 
 @view
 func get_starknet_address_by_name{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name_len : felt, name : felt*) -> (res : felt):
-    let name_str = String(start=name, len=name_len)
-    let (namehash) = hash_name(name_str)
+        name_len : felt, name : felt*) -> (starknet_address : felt):
+    let (namehash) = hash_name(name_len, name)
 
-    let (res) = get_starknet_address(namehash)
-    return (res)
+    let (starknet_address) = get_starknet_address(namehash)
+    return (starknet_address)
 end
 
 @external
 func set_starknet_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        namehash, address):
+        namehash, starknet_address):
     # Call registry and ensure that the calling address is allowed to set this name
     let (caller_addess) = get_caller_address()
 
-    IRegistryContract.assert_owner(
-        contract_address=REGISTRY_CONTRACT_ADDRESS, namehash=namehash, address=caller_addess)
+    let (registry_address) = registry_address_storage.read()
 
-    starknet_address.write(namehash, address)
+    IRegistryContract.assert_owner(
+        contract_address=registry_address, namehash=namehash, address=caller_addess)
+
+    starknet_address_storage.write(namehash, starknet_address)
 
     return ()
 end
@@ -58,12 +75,10 @@ end
 @external
 func set_starknet_address_by_name{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name_len : felt, name : felt*, address):
-    # Call registry and ensure that the calling address is allowed to set this name
-    let name_str = String(start=name, len=name_len)
-    let (namehash) = hash_name(name_str)
+        name_len : felt, name : felt*, starknet_address):
+    let (namehash) = hash_name(name_len, name)
 
-    set_starknet_address(namehash, address)
+    set_starknet_address(namehash, starknet_address)
 
     return ()
 end

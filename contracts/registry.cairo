@@ -87,7 +87,7 @@ func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 
     assert_record_is_not_expired(res)
 
-    with_attr error_message("Insufficient permission (not owner)."):
+    with_attr error_message("Insufficient permission (not owner)"):
         assert res.owner_addr = address
     end
 
