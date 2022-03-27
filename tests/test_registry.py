@@ -16,6 +16,10 @@ def encoded_name_array():
     name = "foo.stark"
     return [str_to_felt(c) for c in list(name)]
 
+@pytest.fixture
+def namehash():
+    return 2620136408426268427374264734671367866746320738357084942770757565003311849299
+
 @pytest_asyncio.fixture
 async def contract():
     starknet = await Starknet.empty()
@@ -58,10 +62,27 @@ async def test_register(registered_contract, encoded_name_array, address):
     return
 
 @pytest.mark.asyncio
-async def test_assert_owner(registered_contract, encoded_name_array, address):
+async def test_register_fail_wrong_tld(contract, address):
+    name = "foo.com"
+    encoded_name_array = [str_to_felt(c) for c in list(name)]
+    try:
+        await contract.register(encoded_name_array, address, address, 10).invoke()
 
+        raise Exception("Transaction to register with wrong TLD did not fail.")
+    except StarkException as e:
+        pass
+
+    return
+
+@pytest.mark.asyncio
+async def test_hash_name(registered_contract, encoded_name_array, namehash):
     result = await registered_contract.get_namehash(encoded_name_array).invoke()
-    namehash = result.result.namehash
+    assert namehash == result.result.namehash
+
+    return
+
+@pytest.mark.asyncio
+async def test_assert_owner(registered_contract, namehash, address):
 
     await registered_contract.assert_owner(namehash, address).invoke()
 
@@ -74,15 +95,31 @@ async def test_assert_owner(registered_contract, encoded_name_array, address):
 
     return
 
+@pytest.mark.asyncio
+async def test_assert_owner_by_name(registered_contract, encoded_name_array, address):
+
+    await registered_contract.assert_owner_by_name(encoded_name_array, address).invoke()
+
+    try:
+        await registered_contract.assert_owner_by_name(encoded_name_array, address+1).invoke()
+
+        raise Exception("Transaction to get resolver for unregistered name succeeded, but should not have.")
+    except StarkException as e:
+        pass
+
+    return
 
 @pytest.mark.asyncio
-async def test_register_fail_wrong_tld(contract, address):
-    name = "foo.com"
-    encoded_name_array = [str_to_felt(c) for c in list(name)]
-    try:
-        await contract.register(encoded_name_array, address, address, 10).invoke()
+async def test_transfer_ownership(registered_contract, encoded_name_array, address):
 
-        raise Exception("Transaction to register with wrong TLD did not fail.")
+    await registered_contract.transfer_ownership(encoded_name_array, address+1).invoke(caller_address=address)
+
+    await registered_contract.assert_owner_by_name(encoded_name_array, address+1).invoke()
+
+    try:
+        await registered_contract.assert_owner_by_name(encoded_name_array, address).invoke()
+
+        raise Exception("Transaction to get resolver for unregistered name succeeded, but should not have.")
     except StarkException as e:
         pass
 

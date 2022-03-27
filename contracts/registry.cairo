@@ -96,6 +96,21 @@ func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @external
+func assert_owner_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*, address : felt):
+    alloc_locals
+
+    local range_check_ptr = range_check_ptr
+
+    assert_name_is_label_dotstark(name_len, name)
+
+    let (namehash) = hash_name(name_len, name)
+
+    assert_owner(namehash, address)
+    return ()
+end
+
+@external
 func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         name_len : felt, name : felt*, owner_addr : felt, resolver_addr : felt,
         registration_years : felt):
