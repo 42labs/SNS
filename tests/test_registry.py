@@ -33,6 +33,10 @@ async def contract():
 def address():
     return 3139084549856436378687393015680186785185683929880547773483526600592946091349
 
+@pytest.fixture
+def registration_period():
+    return 10
+
 @pytest_asyncio.fixture
 async def registered_contract(contract, encoded_name_array, address):
 
@@ -56,17 +60,55 @@ async def test_deploy(contract):
 @pytest.mark.asyncio
 async def test_register(registered_contract, encoded_name_array, address):
 
-    result = await registered_contract.get_resolver_by_name(encoded_name_array).invoke()
-    assert address == result.result.resolver_addr
+    result = await registered_contract.get_record_by_name(encoded_name_array).invoke()
+
+    assert address == result.result.record.resolver_addr
+    assert address == result.result.record.owner_addr
 
     return
 
 @pytest.mark.asyncio
-async def test_register_fail_wrong_tld(contract, address):
+async def test_re_register_expired_address(contract, encoded_name_array, address):
+
+    await contract.register(encoded_name_array, address, address, 0).invoke()
+
+    await contract.register(encoded_name_array, address+1, address, 0).invoke()
+
+    result = await contract.get_record_by_name(encoded_name_array).invoke()
+    assert address+1 == result.result.record.owner_addr
+
+    return
+
+@pytest.mark.asyncio
+async def test_register_fail_already_registered(registered_contract, encoded_name_array, address, registration_period):
+
+    try:
+        await registered_contract.register(encoded_name_array, address+1, address, registration_period).invoke()
+
+        raise Exception("Transaction to re-register with already registered address did not fail.")
+    except StarkException as e:
+        pass
+
+    return
+
+@pytest.mark.asyncio
+async def test_register_fail_registration_period_too_large(contract, encoded_name_array, address):
+
+    try:
+        await contract.register(encoded_name_array, address, address, 100).invoke()
+
+        raise Exception("Transaction to re-register with already registered address did not fail.")
+    except StarkException as e:
+        pass
+
+    return
+
+@pytest.mark.asyncio
+async def test_register_fail_wrong_tld(contract, address, registration_period):
     name = "foo.com"
     encoded_name_array = [str_to_felt(c) for c in list(name)]
     try:
-        await contract.register(encoded_name_array, address, address, 10).invoke()
+        await contract.register(encoded_name_array, address, address, registration_period).invoke()
 
         raise Exception("Transaction to register with wrong TLD did not fail.")
     except StarkException as e:

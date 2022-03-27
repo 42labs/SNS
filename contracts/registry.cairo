@@ -80,6 +80,21 @@ func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     return (resolver_addr)
 end
 
+@view
+func get_record_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*) -> (record : Record):
+    alloc_locals
+
+    local range_check_ptr = range_check_ptr
+
+    assert_name_is_label_dotstark(name_len, name)
+
+    let (namehash) = hash_name(name_len, name)
+    let (res) = record.read(namehash)
+
+    return (res)
+end
+
 @external
 func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         namehash : felt, address : felt):
@@ -127,14 +142,15 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     let (caller_address) = get_caller_address()
     let (current_timestamp) = get_block_timestamp()
 
-    # Check that previous owner does not exist or the domain is expired
-    assert_nn_le(current_timestamp * res.owner_addr, res.expiry_timestamp)
+    # Create new entry if entry does not exist (all values on the struct will be 0)
+    # or if the registration is expired
+    with_attr error_message("Domain already registered, and not expired yet"):
+        assert_nn_le(res.expiry_timestamp, current_timestamp)
+    end
 
-    # Create or update entry
     let expiry_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
     let new_res = Record(
         owner_addr=owner_addr, resolver_addr=resolver_addr, expiry_timestamp=expiry_timestamp)
-
     record.write(namehash, new_res)
 
     return ()
