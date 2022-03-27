@@ -124,3 +124,13 @@ async def test_transfer_ownership(registered_contract, encoded_name_array, addre
         pass
 
     return
+
+@pytest.mark.asyncio
+async def test_update_resolver(registered_contract, encoded_name_array, address):
+
+    await registered_contract.update_resolver(encoded_name_array, address+1).invoke(caller_address=address)
+
+    result = await registered_contract.get_resolver_by_name(encoded_name_array).invoke()
+    assert address+1 == result.result.resolver_addr
+
+    return
