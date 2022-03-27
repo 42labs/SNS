@@ -59,6 +59,14 @@ func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @view
+func get_namehash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*) -> (namehash : felt):
+    let (namehash) = hash_name(name_len, name)
+
+    return (namehash)
+end
+
+@view
 func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         name_len : felt, name : felt*) -> (resolver_addr : felt):
     alloc_locals

@@ -1,7 +1,5 @@
 %lang starknet
 
-from utils.string import String
-
 @contract_interface
 namespace IRegistryContract:
     func get_resolver(namehash : felt) -> (resolver_addr : felt):
