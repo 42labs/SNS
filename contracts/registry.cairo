@@ -2,9 +2,8 @@
 
 from starkware.starknet.common.syscalls import get_caller_address, get_block_timestamp
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_nn_le
+from starkware.cairo.common.math import assert_nn_le, assert_not_equal
 
-from utils.string import String
 from utils.name import hash_name, assert_name_is_label_dotstark
 
 const MAX_REGISTRATION_YEARS = 10
@@ -27,14 +26,14 @@ func assert_record_is_not_expired{syscall_ptr : felt*, range_check_ptr}(res : Re
         assert_nn_le(current_timestamp, res.expiry_timestamp)
     end
 
-    ret
+    return ()
 end
 
 func assert_caller_is_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         namehash : felt):
     let (caller_addess) = get_caller_address()
     assert_owner(namehash, caller_addess)
-    ret
+    return ()
 end
 
 # STORAGE
@@ -50,6 +49,10 @@ func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
         namehash : felt) -> (resolver_addr : felt):
     let (res) = record.read(namehash)
 
+    with_attr error_message("Record does not exist"):
+        assert_not_equal(res.expiry_timestamp, 0)
+    end
+
     assert_record_is_not_expired(res)
 
     return (res.resolver_addr)
@@ -60,13 +63,12 @@ func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
         name_len : felt, name : felt*) -> (resolver_addr : felt):
     alloc_locals
 
-    local range_check_ptr_unrevoked = range_check_ptr
-    let name_str = String(start=name, len=name_len)
+    local range_check_ptr = range_check_ptr
 
-    assert_name_is_label_dotstark{range_check_ptr=range_check_ptr_unrevoked}(name_str)
+    assert_name_is_label_dotstark(name_len, name)
 
-    let (namehash) = hash_name(name_str)
-    let (resolver_addr) = get_resolver{range_check_ptr=range_check_ptr_unrevoked}(namehash)
+    let (namehash) = hash_name(name_len, name)
+    let (resolver_addr) = get_resolver(namehash)
 
     return (resolver_addr)
 end
@@ -82,7 +84,7 @@ func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
         assert res.owner_addr = address
     end
 
-    ret
+    return ()
 end
 
 @external
@@ -91,32 +93,31 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
         registration_years : felt):
     alloc_locals
 
-    local range_check_ptr_unrevoked = range_check_ptr
+    local range_check_ptr = range_check_ptr
 
     # Validate inputs
-    let name_str = String(start=name, len=name_len)
-    assert_name_is_label_dotstark{range_check_ptr=range_check_ptr_unrevoked}(name_str)
-    assert_nn_le{range_check_ptr=range_check_ptr_unrevoked}(
-        registration_years, MAX_REGISTRATION_YEARS)
+    assert_name_is_label_dotstark(name_len, name)
+    assert_nn_le(registration_years, MAX_REGISTRATION_YEARS)
     # TODO: Assert owner is account contract?
     # TODO: Assert registry address conforms to contract interface?
 
-    let (namehash) = hash_name(name_str)
+    let (namehash) = hash_name(name_len, name)
+
     let (res) = record.read(namehash)
     let (caller_address) = get_caller_address()
     let (current_timestamp) = get_block_timestamp()
 
-    # Check that previous owner does not exist or the domain is expired
+    # # Check that previous owner does not exist or the domain is expired
     assert_nn_le(current_timestamp * res.owner_addr, res.expiry_timestamp)
 
-    # Create or update entry
+    # # Create or update entry
     let expiry_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
     let new_res = Record(
         owner_addr=owner_addr, resolver_addr=resolver_addr, expiry_timestamp=expiry_timestamp)
 
     record.write(namehash, new_res)
 
-    ret
+    return ()
 end
 
 @external
@@ -124,8 +125,7 @@ func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         name_len : felt, name : felt*, new_owner_addr : felt):
     alloc_locals
 
-    let name_str = String(start=name, len=name_len)
-    let (local namehash) = hash_name(name_str)
+    let (local namehash) = hash_name(name_len, name)
     assert_caller_is_owner(namehash)
 
     let (res) = record.read(namehash)
@@ -146,8 +146,7 @@ func update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
         name_len : felt, name : felt*, new_resolver_addr : felt):
     alloc_locals
 
-    let name_str = String(start=name, len=name_len)
-    let (local namehash) = hash_name(name_str)
+    let (local namehash) = hash_name(name_len, name)
     assert_caller_is_owner(namehash)
 
     let (res) = record.read(namehash)
