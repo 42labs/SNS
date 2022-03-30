@@ -5,20 +5,10 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
 
-from utils import str_to_felt, hash_name, encode_name
+from utils import hash_name, encode_name
 
 # The path to the contract source code.
 CONTRACT_FILE = os.path.join(os.path.dirname(__file__), "../contracts/registry.cairo")
-
-
-@pytest.fixture
-def name():
-    return "foo.stark"
-
-
-@pytest.fixture
-def subdomain():
-    return "bar."
 
 
 @pytest_asyncio.fixture
@@ -29,11 +19,6 @@ async def contract():
     )
 
     return contract
-
-
-@pytest.fixture
-def address():
-    return 3139084549856436378687393015680186785185683929880547773483526600592946091349
 
 
 @pytest.fixture
@@ -183,7 +168,7 @@ async def test_register_fail_registration_period_too_large(contract, name, addre
 @pytest.mark.asyncio
 async def test_register_fail_wrong_tld(contract, address, registration_period):
     name = "foo.com"
-    encoded_name_array = [str_to_felt(c) for c in list(name)]
+    encoded_name_array = encode_name(name)
     try:
         await contract.register(
             encoded_name_array, address, address, registration_period

@@ -5,7 +5,7 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
 
-from utils import str_to_felt
+from utils import encode_name, hash_name
 
 # The path to the contract source code.
 REGISTRY_CONTRACT_FILE = os.path.join(
@@ -15,22 +15,6 @@ REGISTRY_CONTRACT_FILE = os.path.join(
 RESOLVER_CONTRACT_FILE = os.path.join(
     os.path.dirname(__file__), "../contracts/sample_resolver.cairo"
 )
-
-
-@pytest.fixture
-def encoded_name_array():
-    name = "foo.stark"
-    return [str_to_felt(c) for c in list(name)]
-
-
-@pytest.fixture
-def address():
-    return 3139084549856436378687393015680186785185683929880547773483526600592946091349
-
-
-@pytest.fixture
-def namehash():
-    return 2620136408426268427374264734671367866746320738357084942770757565003311849299
 
 
 @pytest_asyncio.fixture
@@ -46,7 +30,8 @@ async def contracts():
 
 
 @pytest_asyncio.fixture
-async def registered_and_resolver_contracts(contracts, encoded_name_array, address):
+async def registered_and_resolver_contracts(contracts, name, address):
+    encoded_name_array = encode_name(name)
     registry_contract, resolver_contract = contracts
 
     await registry_contract.register(
@@ -72,8 +57,9 @@ async def test_deploy(contracts):
 
 @pytest.mark.asyncio
 async def test_register_and_add_resolver(
-    registered_and_resolver_contracts, encoded_name_array, address
+    registered_and_resolver_contracts, name, address
 ):
+    encoded_name_array = encode_name(name)
     _, resolver_contract = registered_and_resolver_contracts
 
     result = await resolver_contract.get_starknet_address_by_name(
@@ -86,8 +72,9 @@ async def test_register_and_add_resolver(
 
 @pytest.mark.asyncio
 async def test_resolver_for_unknown_name(
-    registered_and_resolver_contracts, namehash, address
+    registered_and_resolver_contracts, name, address
 ):
+    namehash = hash_name(name)
     _, resolver_contract = registered_and_resolver_contracts
 
     result = await resolver_contract.get_starknet_address(namehash).invoke()
@@ -101,8 +88,9 @@ async def test_resolver_for_unknown_name(
 
 @pytest.mark.asyncio
 async def test_only_owner_can_update_resolver(
-    registered_and_resolver_contracts, encoded_name_array, address
+    registered_and_resolver_contracts, name, address
 ):
+    encoded_name_array = encode_name(name)
     _, resolver_contract = registered_and_resolver_contracts
 
     try:
