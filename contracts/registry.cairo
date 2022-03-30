@@ -4,7 +4,8 @@ from starkware.starknet.common.syscalls import get_caller_address, get_block_tim
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_nn_le, assert_not_equal
 
-from utils.name import hash_name, hash_name_with_base, assert_name_is_label_dotstark
+from utils.name import (
+    hash_name, hash_name_with_base, assert_name_is_label_dotstark, assert_name_is_label_dot)
 
 const MAX_REGISTRATION_YEARS = 10
 const SECONDS_IN_YEAR = 31556926
@@ -57,15 +58,49 @@ end
 # PUBLIC FUNCTIONS
 
 @view
-func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        namehash : felt) -> (resolver_addr : felt):
+func get_record{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt) -> (record : Record):
     alloc_locals
 
     let (local res) = record.read(namehash)
 
-    assert_registration_is_not_expired(namehash)
+    assert_registration_is_not_expired(res.apex_namehash)
+
+    return (res)
+end
+
+@view
+func get_record_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*) -> (record : Record):
+    alloc_locals
+
+    local range_check_ptr = range_check_ptr
+
+    let (namehash) = hash_name(name_len, name)
+    let (res) = get_record(namehash)
+
+    return (res)
+end
+
+@view
+func get_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        namehash : felt) -> (resolver_addr : felt):
+    let (res) = get_record(namehash)
 
     return (res.resolver_addr)
+end
+
+@view
+func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        name_len : felt, name : felt*) -> (resolver_addr : felt):
+    alloc_locals
+
+    local range_check_ptr = range_check_ptr
+
+    let (namehash) = hash_name(name_len, name)
+    let (resolver_addr) = get_resolver(namehash)
+
+    return (resolver_addr)
 end
 
 @view
@@ -76,42 +111,12 @@ func get_namehash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     return (namehash)
 end
 
-@view
-func get_resolver_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name_len : felt, name : felt*) -> (resolver_addr : felt):
-    alloc_locals
-
-    local range_check_ptr = range_check_ptr
-
-    assert_name_is_label_dotstark(name_len, name)
-
-    let (namehash) = hash_name(name_len, name)
-    let (resolver_addr) = get_resolver(namehash)
-
-    return (resolver_addr)
-end
-
-@view
-func get_record_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name_len : felt, name : felt*) -> (record : Record):
-    alloc_locals
-
-    local range_check_ptr = range_check_ptr
-
-    assert_name_is_label_dotstark(name_len, name)
-
-    let (namehash) = hash_name(name_len, name)
-    let (res) = record.read(namehash)
-
-    return (res)
-end
-
 @external
 func assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         namehash : felt, address : felt):
     alloc_locals
 
-    let (local res) = record.read(namehash)
+    let (local res) = get_record(namehash)
 
     assert_registration_is_not_expired(namehash)
 
@@ -128,8 +133,6 @@ func assert_owner_by_name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     alloc_locals
 
     local range_check_ptr = range_check_ptr
-
-    assert_name_is_label_dotstark(name_len, name)
 
     let (namehash) = hash_name(name_len, name)
 
@@ -178,6 +181,9 @@ func register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 
     local range_check_ptr = range_check_ptr
 
+    # Validate label
+    assert_name_is_label_dot(label_len, label)
+
     # Validate caller
     let (parent_record) = record.read(parent_namehash)
     assert_registration_is_not_expired(parent_namehash)
@@ -186,12 +192,11 @@ func register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 
     let (subdomain_namehash) = hash_name_with_base(label_len, label, parent_namehash)
 
-    let (local res) = record.read(subdomain_namehash)
-    let (local current_timestamp) = get_block_timestamp()
+    let (subdomain_record) = record.read(subdomain_namehash)
 
     # Create new entry if entry does not exist
     with_attr error_message("Subdomain already registered, please use update function"):
-        assert_nn_le(expiration_timestamp, current_timestamp)
+        assert_nn_le(0, subdomain_record.apex_namehash)
     end
 
     let new_res = Record(
@@ -222,7 +227,7 @@ func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     let (local namehash) = hash_name(name_len, name)
     assert_caller_is_owner(namehash)
 
-    let (res) = record.read(namehash)
+    let (res) = get_record(namehash)
 
     let new_res = Record(
         owner_addr=new_owner_addr,
@@ -241,7 +246,7 @@ func update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
     let (local namehash) = hash_name(name_len, name)
     assert_caller_is_owner(namehash)
 
-    let (res) = record.read(namehash)
+    let (res) = get_record(namehash)
 
     let new_res = Record(
         owner_addr=res.owner_addr,

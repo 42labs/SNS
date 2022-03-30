@@ -43,6 +43,21 @@ func assert_name_is_label_dotstark{range_check_ptr}(name_len : felt, name : felt
     return assert_name_is_label_dotstark(name_len - 1, name + 1)
 end
 
+func assert_name_is_label_dot{range_check_ptr}(name_len : felt, name : felt*):
+    with_attr error_message("Name is too short"):
+        assert_nn_le(1, name_len)
+    end
+
+    if name_len == 1:
+        assert [name] = 46
+        return ()
+    end
+
+    assert_character_is_not_punctuation([name])
+
+    return assert_name_is_label_dot(name_len - 1, name + 1)
+end
+
 func hash_name_with_base{pedersen_ptr : HashBuiltin*}(
         name_len : felt, name : felt*, base : felt) -> (namehash : felt):
     # Lowercase normalization
