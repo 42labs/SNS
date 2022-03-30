@@ -4,11 +4,10 @@ from starkware.cairo.common.math import assert_nn_le
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash import hash2
 
-func assert_character_is_lowercase_alphabet{range_check_ptr}(character : felt):
-    # between 97 and 122
-    with_attr error_message("Found character that is not lowercase alphabetical"):
+func assert_character_is_not_punctuation{range_check_ptr}(character : felt):
+    # greater than 97
+    with_attr error_message("Found character that is punctuation"):
         assert_nn_le(97, character)
-        assert_nn_le(character, 122)
     end
 
     return ()
@@ -39,7 +38,7 @@ func assert_name_is_label_dotstark{range_check_ptr}(name_len : felt, name : felt
         return ()
     end
 
-    assert_character_is_lowercase_alphabet([name])
+    assert_character_is_not_punctuation([name])
 
     return assert_name_is_label_dotstark(name_len - 1, name + 1)
 end
