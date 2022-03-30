@@ -5,20 +5,23 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
 
-from utils import str_to_felt
+from utils import str_to_felt, hash_name
 
 # The path to the contract source code.
 CONTRACT_FILE = os.path.join(
     os.path.dirname(__file__), "../contracts/registry.cairo")
 
 @pytest.fixture
-def encoded_name_array():
-    name = "foo.stark"
+def name():
+    return "foo.stark"
+
+@pytest.fixture
+def encoded_name_array(name):
     return [str_to_felt(c) for c in list(name)]
 
 @pytest.fixture
-def namehash():
-    return 2620136408426268427374264734671367866746320738357084942770757565003311849299
+def namehash(name):
+    return hash_name(name)
 
 @pytest_asyncio.fixture
 async def contract():
