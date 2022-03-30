@@ -43,14 +43,22 @@ func assert_name_is_label_dotstark{range_check_ptr}(name_len : felt, name : felt
     return assert_name_is_label_dotstark(name_len - 1, name + 1)
 end
 
-func hash_name{pedersen_ptr : HashBuiltin*}(name_len : felt, name : felt*) -> (namehash : felt):
+func hash_name_with_base{pedersen_ptr : HashBuiltin*}(
+        name_len : felt, name : felt*, base : felt) -> (namehash : felt):
     # Lowercase normalization
     # Hash by label, so that you can create hash for subdomain using hash of domain and string of subdomain?
     if name_len == 0:
-        return (0)
+        return (base)
     end
-    let (recursive_hash) = hash_name(name_len - 1, name + 1)
+    let (recursive_hash) = hash_name_with_base(name_len - 1, name + 1, base)
     let (hash) = hash2{hash_ptr=pedersen_ptr}([name], recursive_hash)
 
     return (hash)
+end
+
+const DEFAULT_NAMEHASH_BASE = 0
+
+func hash_name{pedersen_ptr : HashBuiltin*}(name_len : felt, name : felt*) -> (namehash : felt):
+    let (namehash) = hash_name_with_base(name_len, name, DEFAULT_NAMEHASH_BASE)
+    return (namehash)
 end
