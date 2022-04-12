@@ -25,7 +25,8 @@ func assert_registration_is_not_expired{
     alloc_locals
 
     let (local current_timestamp) = get_block_timestamp()
-    let (expiration_timestamp) = expiration.read(namehash)
+    let (record) = record_storage.read(namehash)
+    let (expiration_timestamp) = expiration_storage.read(record.apex_namehash)
 
     with_attr error_message("Record does not exist"):
         assert_not_equal(expiration_timestamp, 0)
@@ -45,14 +46,23 @@ func assert_caller_is_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     return ()
 end
 
+func assert_record_does_not_exist{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(namehash : felt):
+    let (record) = record_storage.read(namehash)
+    with_attr error_message("Record already exists"):
+        assert record.apex_namehash = 0
+    end
+    return ()
+end
+
 # STORAGE
 
 @storage_var
-func record(namehash : felt) -> (record : Record):
+func record_storage(namehash : felt) -> (record : Record):
 end
 
 @storage_var
-func expiration(namehash : felt) -> (expiration_timestamp : felt):
+func expiration_storage(namehash : felt) -> (expiration_timestamp : felt):
 end
 
 # PUBLIC FUNCTIONS
@@ -62,7 +72,7 @@ func get_record{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
         namehash : felt) -> (record : Record):
     alloc_locals
 
-    let (local res) = record.read(namehash)
+    let (local res) = record_storage.read(namehash)
 
     assert_registration_is_not_expired(res.apex_namehash)
 
@@ -154,8 +164,8 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
 
     let (namehash) = hash_name(name_len, name)
 
-    let (res) = record.read(namehash)
-    let (expiration_timestamp) = expiration.read(namehash)
+    let (res) = record_storage.read(namehash)
+    let (expiration_timestamp) = expiration_storage.read(namehash)
     let (caller_address) = get_caller_address()
     let (current_timestamp) = get_block_timestamp()
 
@@ -166,9 +176,9 @@ func register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     end
 
     let expiration_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
-    expiration.write(namehash, expiration_timestamp)
+    expiration_storage.write(namehash, expiration_timestamp)
     let new_res = Record(owner_addr=owner_addr, resolver_addr=resolver_addr, apex_namehash=namehash)
-    record.write(namehash, new_res)
+    record_storage.write(namehash, new_res)
 
     return ()
 end
@@ -181,18 +191,19 @@ func register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 
     local range_check_ptr = range_check_ptr
 
-    # Validate label
-    assert_name_is_label_dot(label_len, label)
-
-    # Validate caller
-    let (parent_record) = record.read(parent_namehash)
-    assert_registration_is_not_expired(parent_namehash)
-    assert_caller_is_owner(parent_namehash)
-    let (expiration_timestamp) = expiration.read(parent_record.apex_namehash)
-
     let (subdomain_namehash) = hash_name_with_base(label_len, label, parent_namehash)
 
-    let (subdomain_record) = record.read(subdomain_namehash)
+    # Validate label
+    assert_name_is_label_dot(label_len, label)
+    assert_record_does_not_exist(subdomain_namehash)
+
+    # Validate caller
+    let (parent_record) = record_storage.read(parent_namehash)
+    assert_registration_is_not_expired(parent_namehash)
+    assert_caller_is_owner(parent_namehash)
+    let (expiration_timestamp) = expiration_storage.read(parent_record.apex_namehash)
+
+    let (subdomain_record) = record_storage.read(subdomain_namehash)
 
     # Create new entry if entry does not exist
     with_attr error_message("Subdomain already registered, please use update function"):
@@ -203,7 +214,7 @@ func register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         owner_addr=owner_addr,
         resolver_addr=resolver_addr,
         apex_namehash=parent_record.apex_namehash)
-    record.write(subdomain_namehash, new_res)
+    record_storage.write(subdomain_namehash, new_res)
 
     return ()
 end
@@ -233,7 +244,7 @@ func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         owner_addr=new_owner_addr,
         resolver_addr=res.resolver_addr,
         apex_namehash=res.apex_namehash)
-    record.write(namehash, new_res)
+    record_storage.write(namehash, new_res)
 
     ret
 end
@@ -252,7 +263,7 @@ func update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
         owner_addr=res.owner_addr,
         resolver_addr=new_resolver_addr,
         apex_namehash=res.apex_namehash)
-    record.write(namehash, new_res)
+    record_storage.write(namehash, new_res)
 
     ret
 end

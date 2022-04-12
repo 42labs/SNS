@@ -7,7 +7,7 @@ def name():
 
 
 @pytest.fixture
-def subdomain():
+def label():
     return "bar."
 
 

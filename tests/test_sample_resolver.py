@@ -105,3 +105,35 @@ async def test_only_owner_can_update_resolver(
         pass
 
     return
+
+
+@pytest.mark.asyncio
+async def test_register_and_add_resolver_subdomain(
+    registered_and_resolver_contracts, name, label, address
+):
+    encoded_name_array = encode_name(name)
+    encoded_label_array = encode_name(label)
+    encoded_subdomain_array = encoded_label_array + encoded_name_array
+    registry_contract, resolver_contract = registered_and_resolver_contracts
+
+    await registry_contract.register_subdomain_with_name(
+        encoded_label_array,
+        encoded_name_array,
+        address + 1,
+        resolver_contract.contract_address,
+    ).invoke(caller_address=address)
+
+    await resolver_contract.set_starknet_address_by_name(
+        encoded_subdomain_array, address + 2
+    ).invoke(caller_address=address + 1)
+
+    result = await resolver_contract.get_starknet_address_by_name(
+        encoded_subdomain_array
+    ).invoke()
+    assert address + 2 == result.result.starknet_address
+
+    await registry_contract.assert_owner_by_name(
+        encoded_subdomain_array, address + 1
+    ).invoke()
+
+    return
