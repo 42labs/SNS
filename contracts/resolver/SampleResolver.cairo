@@ -3,10 +3,9 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 from contracts.resolver.library import (
-    Resolver_registry_address_storage, Resolver_assert_supports_interface,
-    Resolver_get_registry_address, Resolver_get_starknet_address,
-    Resolver_get_starknet_address_by_name, Resolver_set_starknet_address,
-    Resolver_set_starknet_address_by_name)
+    Resolver_registry_address_storage, Resolver_supports_interface, Resolver_get_registry_address,
+    Resolver_get_starknet_address, Resolver_get_starknet_address_by_name,
+    Resolver_set_starknet_address, Resolver_set_starknet_address_by_name)
 
 #
 # Constructor
@@ -24,9 +23,9 @@ end
 #
 
 @view
-func assert_supports_interface(interface_hash : felt):
-    Resolver_assert_supports_interface(interface_hash)
-    return ()
+func supports_interface(interface_hash : felt) -> (interface_supported : felt):
+    let (interface_supported) = Resolver_supports_interface(interface_hash)
+    return (interface_supported)
 end
 
 #
