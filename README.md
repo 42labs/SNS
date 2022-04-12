@@ -6,15 +6,20 @@ See this [overview](https://rocky-volleyball-654.notion.site/Starknet-Naming-Ser
 
 ## How to Use SNS
 
-Once the contracts are deployed, this section will be updated with instructions and addresses.
+You use the SNS-provided web application to register your domain [name](TODO).
+
+The Registry is deployed at address TODO, see it on Voyager here. The SampleResolver is at address TODO, which you can inspect on Voyager at this link.
 
 # Usage
 
 ## Interacting with the Contracts
 
-The `contracts/registry_interface.cairo` file contains the Interface spec (`IRegistryContract`) for the registry contract. In order to retrieve a Starknet address for a given name, you need two calls:
-1. Call the registry's `get_resolver` or `get_resolver_by_name` functions to retrieve the address of the resolver for that domain.
-2. For that Resolver, call `get_starknet_address` or `get_starknet_address_by_name` functions to retrieve the Starknet address for the name.
+The `contracts/registry/IRegistry.cairo` file contains the Interface spec (`IRegistry`) for the registry contract. To look up  will want to call the registry's `get_resolver` or `get_resolver_by_name` functions to retrieve the address of the resolver for that domain.
+
+The resolver for a domain might then provide different data for the domains it resolves. To check if a resolver implements a given method, determine the hash for the method you are interested in and call the resolver's `supports_interface` function. A method's hash is the namehash of the primary getter function, without `func`, implicit args or the colon (see `contracts.name.library.hash_name` for a Cairo implementation and `tests.utils.hash_name` for the Python equivalent). The `supports_interface` function returns `TRUE` (1) if the function is supported, and `FALSE` (0) if not.
+
+Currently, the following resolver methods are supported:
+- `get_starknet_address(namehash : felt) -> (starknet_address : felt)` with hash `2820744738538176835336224571064374651047813236984662977660834172684259369636`. This method resolves a domain name to a Starknet address. Thus, to check if a given resolver provides starknet addresses for a domain, call `supports_interface(2820744738538176835336224571064374651047813236984662977660834172684259369636)`.
 
 ## Working With the Contracts
 
