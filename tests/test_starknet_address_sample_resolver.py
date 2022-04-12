@@ -13,7 +13,8 @@ REGISTRY_CONTRACT_FILE = os.path.join(
 )
 
 RESOLVER_CONTRACT_FILE = os.path.join(
-    os.path.dirname(__file__), "../contracts/resolver/SampleResolver.cairo"
+    os.path.dirname(__file__),
+    "../contracts/starknet_address_resolver/SampleResolver.cairo",
 )
 
 

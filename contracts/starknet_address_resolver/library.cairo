@@ -2,6 +2,8 @@
 
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from contracts.name.library import hash_name
 from contracts.registry.IRegistry import IRegistry
@@ -10,7 +12,9 @@ from contracts.registry.IRegistry import IRegistry
 # Const
 #
 
-const STARKNET_ADDRESS_INTERFACE_HASH = 0x0  # TODO
+# hash_name() of primary getter function, without "func", implicit args or colon
+# In this case, `get_starknet_address(namehash : felt) -> (starknet_address : felt)`
+const STARKNET_ADDRESS_INTERFACE_HASH = 2820744738538176835336224571064374651047813236984662977660834172684259369636
 
 #
 # Struct
@@ -33,11 +37,12 @@ end
 # Guards
 #
 
-func Resolver_assert_supports_interface(interface_hash : felt):
-    with_attr error_message("Interface not supported"):
-        assert interface_hash = STARKNET_ADDRESS_INTERFACE_HASH
+func Resolver_supports_interface(interface_hash : felt) -> (interface_supported : felt):
+    if interface_hash == STARKNET_ADDRESS_INTERFACE_HASH:
+        return (TRUE)
     end
-    return ()
+
+    return (FALSE)
 end
 
 #
