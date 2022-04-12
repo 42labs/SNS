@@ -404,7 +404,7 @@ async def test_update_resolver_subdomain(
     ).invoke(caller_address=address + 2)
 
     result = await registered_contract_with_subdomain.get_resolver_by_name(
-        encoded_label_array
+        encoded_subdomain_array
     ).invoke()
     assert address + 1 == result.result.resolver_addr
 
