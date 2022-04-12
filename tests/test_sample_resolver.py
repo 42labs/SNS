@@ -9,11 +9,11 @@ from utils import encode_name, hash_name
 
 # The path to the contract source code.
 REGISTRY_CONTRACT_FILE = os.path.join(
-    os.path.dirname(__file__), "../contracts/registry.cairo"
+    os.path.dirname(__file__), "../contracts/registry/Registry.cairo"
 )
 
 RESOLVER_CONTRACT_FILE = os.path.join(
-    os.path.dirname(__file__), "../contracts/sample_resolver.cairo"
+    os.path.dirname(__file__), "../contracts/resolver/SampleResolver.cairo"
 )
 
 
