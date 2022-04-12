@@ -8,7 +8,9 @@ from starkware.starkware_utils.error_handling import StarkException
 from utils import hash_name, encode_name
 
 # The path to the contract source code.
-CONTRACT_FILE = os.path.join(os.path.dirname(__file__), "../contracts/registry.cairo")
+CONTRACT_FILE = os.path.join(
+    os.path.dirname(__file__), "../contracts/registry/Registry.cairo"
+)
 
 
 @pytest_asyncio.fixture
