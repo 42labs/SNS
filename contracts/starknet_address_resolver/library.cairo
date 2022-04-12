@@ -3,7 +3,7 @@
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from contracts.name.library import hash_name
 from contracts.registry.IRegistry import IRegistry
@@ -37,7 +37,7 @@ end
 # Guards
 #
 
-func Resolver_supports_interface(interface_hash : felt):
+func Resolver_supports_interface(interface_hash : felt) -> (interface_supported : felt):
     if interface_hash == STARKNET_ADDRESS_INTERFACE_HASH:
         return (TRUE)
     end

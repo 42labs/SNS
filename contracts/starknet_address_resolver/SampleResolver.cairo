@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from contracts.resolver.library import (
+from contracts.starknet_address_resolver.library import (
     Resolver_registry_address_storage, Resolver_supports_interface, Resolver_get_registry_address,
     Resolver_get_starknet_address, Resolver_get_starknet_address_by_name,
     Resolver_set_starknet_address, Resolver_set_starknet_address_by_name)
