@@ -1,21 +1,21 @@
-import ActionButton from '../components/ActionButton'
-import SNSHeader from '../components/SNSHeader'
+import React from "react";
+import ActionButton from "../components/ActionButton";
+import SNSHeader from "../components/SNSHeader";
 
 const IndexPage = () => (
   <div>
     <SNSHeader />
     <div className="flex">
-      <div className="text-center px-4 py-0 mx-auto mb-4 text-lg w-8/12">
-        Starknet Name Service (SNS) is the name service for Starknet, similar to DNS for the internet and ENS for Ethereum.
-        Currently in beta on testnet, launching soon!
-        You can find more information <a href="notion.so">here</a>.
+      <div className="text-center px-4 py-0 mx-auto mb-8 text-lg w-8/12">
+        Starknet Name Service (SNS) is the name service for Starknet, similar to
+        DNS for the internet and ENS for Ethereum. Currently in beta on testnet,
+        launching soon! You can find more information{" "}
+        <a href="notion.so">here</a>.
       </div>
     </div>
 
-    <div className="flex my-8">
-      <div className="text-center m-auto">
-        What would you like to do?
-      </div>
+    <div className="flex my-4">
+      <div className="text-center m-auto">What would you like to do?</div>
     </div>
 
     <div className="flex mx-auto">
@@ -26,6 +26,6 @@ const IndexPage = () => (
       </div>
     </div>
   </div>
-)
+);
 
-export default IndexPage
+export default IndexPage;
