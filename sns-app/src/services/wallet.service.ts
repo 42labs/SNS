@@ -20,13 +20,19 @@ export const getExplorerBaseUrl = (): string | undefined => {
   }
 };
 
+export const buildExplorerUrlForAddress = (address: string): string => {
+  const baseUrl = getExplorerBaseUrl();
+  const path = "/contract/" + address;
+  return baseUrl + path;
+};
+
 export const networkUrl = (): string | undefined => {
   try {
     return getStarknet().provider.baseUrl;
   } catch {}
 };
 
-type Network = "mainnet-alpha" | "goerli-alpha" | "localhost";
+export type Network = "mainnet-alpha" | "goerli-alpha" | "localhost";
 
 export const networkId = (): Network | undefined => {
   try {

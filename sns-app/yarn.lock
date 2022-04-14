@@ -427,6 +427,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@starknet-react/core@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-0.7.0.tgz#acfdc29cba93449c314887cb97c08af40c17a24d"
+  integrity sha512-lTEGfeUmeOu66n12PhrbN9Fpu1ujoQsbi6jWRjA7Yrz657ZABeGJatnwQLFhz4JkIXuEHtkQJ6Gu90i79VJoUQ==
+  dependencies:
+    immutable "^4.0.0"
+
 "@types/json-schema@^7.0.9":
   version "7.0.11"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.11.tgz"
@@ -1335,6 +1342,11 @@ ignore@^5.1.8, ignore@^5.2.0:
   version "5.2.0"
   resolved "https://registry.npmjs.org/ignore/-/ignore-5.2.0.tgz"
   integrity sha512-CmxgYGiEPCLhfLnpPp1MoRmifwEIOgjcHXxOBjv7mY96c+eWScsOP9c112ZyLdWHi0FxHjI+4uVhKYp/gcdRmQ==
+
+immutable@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.0.0.tgz#b86f78de6adef3608395efb269a91462797e2c23"
+  integrity sha512-zIE9hX70qew5qTUjSS7wi1iwj/l7+m54KWU247nhM3v806UdGj1yDndXj+IOYxxtW9zyLI+xqFNZjTuDaLUqFw==
 
 import-fresh@^3.0.0, import-fresh@^3.2.1:
   version "3.3.0"

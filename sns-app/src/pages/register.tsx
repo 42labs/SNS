@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
@@ -14,6 +13,7 @@ import {
   networkId,
   walletAddress,
 } from "../services/wallet.service";
+import { StyledInternalLink } from "../components/StyledLink";
 
 const RegisterPage = () => {
   const [isConnected, setIsConnected] = useState(isWalletConnected());
@@ -72,10 +72,7 @@ const RegisterPage = () => {
             <Button onClick={handleConnectClick}>Connect Wallet</Button>
             <div className="mt-6">
               You can also search domain names{" "}
-              <div className="inline text-blue-800 underline hover:text-violet-900 ">
-                <Link href="/search">here</Link>
-              </div>
-              .
+              <StyledInternalLink href="/search">here</StyledInternalLink>.
             </div>
           </div>
         )}

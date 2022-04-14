@@ -22,6 +22,7 @@ struct Registry_Record:
     member owner_addr : felt
     member resolver_addr : felt
     member apex_namehash : felt  # namehash of the apex domain, e.g. 'foo.stark' for 'bar.foo.stark'
+    member exist : felt
 end
 
 #
@@ -46,11 +47,10 @@ func Registry_assert_registration_is_not_expired{
 
     let (local current_timestamp) = get_block_timestamp()
     let (record) = Registry_record_storage.read(namehash)
-    let (expiration_timestamp) = Registry_expiration_storage.read(record.apex_namehash)
-
-    with_attr error_message("Record does not exist"):
-        assert_not_equal(expiration_timestamp, 0)
+    if record.exist == 0:
+        return ()
     end
+    let (expiration_timestamp) = Registry_expiration_storage.read(record.apex_namehash)
 
     with_attr error_message("Record is expired"):
         assert_nn_le(current_timestamp, expiration_timestamp)
@@ -63,6 +63,17 @@ func Registry_assert_caller_is_owner{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(namehash : felt):
     let (caller_addess) = get_caller_address()
     Registry_assert_owner(namehash, caller_addess)
+    return ()
+end
+
+func Registry_assert_record_exists{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(namehash : felt):
+    let (record) = Registry_record_storage.read(namehash)
+
+    with_attr error_message("Record does not exist"):
+        assert record.exist = 1
+    end
+
     return ()
 end
 
@@ -81,6 +92,7 @@ func Registry_assert_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
 
     let (local res) = Registry_get_record(namehash)
 
+    Registry_assert_record_exists(namehash)
     Registry_assert_registration_is_not_expired(namehash)
 
     with_attr error_message("Insufficient permission (not owner)"):
@@ -187,7 +199,7 @@ func Registry_register{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     let expiration_timestamp = current_timestamp + registration_years * SECONDS_IN_YEAR
     Registry_expiration_storage.write(namehash, expiration_timestamp)
     let new_res = Registry_Record(
-        owner_addr=owner_addr, resolver_addr=resolver_addr, apex_namehash=namehash)
+        owner_addr=owner_addr, resolver_addr=resolver_addr, apex_namehash=namehash, exist=1)
     Registry_record_storage.write(namehash, new_res)
 
     return ()
@@ -208,6 +220,7 @@ func Registry_register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin
 
     # Validate caller
     let (parent_record) = Registry_record_storage.read(parent_namehash)
+    Registry_assert_record_exists(parent_namehash)
     Registry_assert_registration_is_not_expired(parent_namehash)
     Registry_assert_caller_is_owner(parent_namehash)
     let (expiration_timestamp) = Registry_expiration_storage.read(parent_record.apex_namehash)
@@ -221,7 +234,8 @@ func Registry_register_subdomain{syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     let new_res = Registry_Record(
         owner_addr=owner_addr,
         resolver_addr=resolver_addr,
-        apex_namehash=parent_record.apex_namehash)
+        apex_namehash=parent_record.apex_namehash,
+        exist=1)
     Registry_record_storage.write(subdomain_namehash, new_res)
 
     return ()
@@ -249,7 +263,8 @@ func Registry_transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     let new_res = Registry_Record(
         owner_addr=new_owner_addr,
         resolver_addr=res.resolver_addr,
-        apex_namehash=res.apex_namehash)
+        apex_namehash=res.apex_namehash,
+        exist=1)
     Registry_record_storage.write(namehash, new_res)
 
     return ()
@@ -267,7 +282,8 @@ func Registry_update_resolver{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     let new_res = Registry_Record(
         owner_addr=res.owner_addr,
         resolver_addr=new_resolver_addr,
-        apex_namehash=res.apex_namehash)
+        apex_namehash=res.apex_namehash,
+        exist=1)
     Registry_record_storage.write(namehash, new_res)
 
     return ()
