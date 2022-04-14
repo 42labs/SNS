@@ -76,7 +76,7 @@ const SubmitPage = () => {
     invoke({ args });
   };
 
-  const inputClassName = "block mx-auto min-w-fit";
+  const inputClassName = "block mx-auto";
 
   if (error) {
     console.error("Error submitting registration transaction", error);

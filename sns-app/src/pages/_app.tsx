@@ -8,7 +8,7 @@ import SNSHeader from "../components/SNSHeader";
 
 const MyApp = ({ Component, pageProps }: AppProps) => (
   <StarknetProvider>
-    <div className="bg-violet-300 min-h-screen">
+    <div className="bg-violet-300 min-h-screen flex flex-col justify-start">
       <SNSHeader />
       <Component {...pageProps} />
       <SNSFooter />
