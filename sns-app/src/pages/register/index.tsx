@@ -1,10 +1,9 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Button from "../components/Button";
-import NameInput from "../components/NameInput";
-import SNSHeader from "../components/SNSHeader";
-import { truncateAddress } from "../services/address.service";
+import Button from "../../components/Button";
+import { NameInput } from "../../components/NameInput";
+import { truncateAddress } from "../../services/address.service";
 import {
   addWalletChangeListener,
   connectWallet,
@@ -12,26 +11,31 @@ import {
   isWalletConnected,
   networkId,
   walletAddress,
-} from "../services/wallet.service";
-import { StyledInternalLink } from "../components/StyledLink";
+} from "../../services/wallet.service";
+import { StyledInternalLink } from "../../components/StyledLink";
+import AddressDisplay from "../../components/AddressDisplay";
+import ActionButton from "../../components/ActionButton";
 
 const RegisterPage = () => {
   const [isConnected, setIsConnected] = useState(isWalletConnected());
   const [address, setAddress] = useState<string>();
-  const [nameAddress, setNameAddress] = useState<string>();
   const router = useRouter();
 
   const { name } = router.query;
 
   useEffect(() => {
-    addWalletChangeListener((accounts) => {
-      if (accounts.length > 0) {
-        setAddress(accounts[0]);
-      } else {
-        setAddress("");
-        setIsConnected(false);
-      }
-    });
+    try {
+      addWalletChangeListener((accounts) => {
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+        } else {
+          setAddress("");
+          setIsConnected(false);
+        }
+      });
+    } catch {
+      router.push("/");
+    }
   }, []);
 
   useEffect(() => {
@@ -49,7 +53,6 @@ const RegisterPage = () => {
   };
 
   const handleRegisterName = (name: string) => {
-    setNameAddress(name);
     router.push("/register?name=" + encodeURI(name));
   };
 
@@ -60,9 +63,17 @@ const RegisterPage = () => {
     </div>
   );
 
+  const childrenIfNameNotRegistered = (
+    <div className="text-center mb-2 mt-4">
+      <ActionButton
+        pagePath={"/register/submit?name=" + name}
+        text="Register it now"
+      />
+    </div>
+  );
+
   return (
     <div>
-      <SNSHeader />
       <div className="my-4">
         {!isConnected && (
           <div className="mx-auto text-center">
@@ -79,13 +90,14 @@ const RegisterPage = () => {
         {name ? (
           <div className="my-6">
             <div className="text-center text-xl">
-              <div className="font-semibold inline">{name}</div>
-              {nameAddress ? (
-                <div className="inline"> is already registered.</div>
-              ) : (
-                <div> is available.</div>
+              {typeof name === "string" && (
+                <AddressDisplay
+                  name={name}
+                  childrenIfAddressDoesNotExist={childrenIfNameNotRegistered}
+                />
               )}
             </div>
+
             {nameInputWithPrompt("Search another name")}
           </div>
         ) : (

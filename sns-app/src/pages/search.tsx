@@ -1,7 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import NameInput from "../components/NameInput";
-import SNSHeader from "../components/SNSHeader";
+import { NameInput } from "../components/NameInput";
 import AddressDisplay from "../components/AddressDisplay";
 
 const SearchPage = () => {
@@ -15,7 +14,6 @@ const SearchPage = () => {
 
   return (
     <div>
-      <SNSHeader />
       {name == undefined ? (
         <div>
           <div className="text-center mx-auto">

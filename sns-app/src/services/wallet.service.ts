@@ -26,6 +26,12 @@ export const buildExplorerUrlForAddress = (address: string): string => {
   return baseUrl + path;
 };
 
+export const buildExplorerUrlForTransaction = (transaction: string): string => {
+  const baseUrl = getExplorerBaseUrl();
+  const path = "/tx/" + transaction;
+  return baseUrl + path;
+};
+
 export const networkUrl = (): string | undefined => {
   try {
     return getStarknet().provider.baseUrl;
@@ -54,7 +60,6 @@ export const addWalletChangeListener = async (
   handleEvent: (accounts: string[]) => void
 ) => {
   const starknet = getStarknet();
-  console.log(starknet);
   if (starknet) {
     starknet.on("accountsChanged", handleEvent);
   }

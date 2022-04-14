@@ -3,3 +3,8 @@ export interface Record {
   resolver_addr: string;
   apex_namehash: string;
 }
+
+export interface RegistrySubmission extends Record {
+  name: string;
+  registration_years: number;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactNode } from "react";
 import { useContract, useStarknetCall } from "@starknet-react/core";
 import {
   getRegistryAddress,
@@ -17,9 +17,16 @@ import { StyledExternalLink } from "./StyledLink";
 interface AddressDisplayProps {
   name: string;
   className?: string;
+  childrenIfAddressExists?: ReactNode;
+  childrenIfAddressDoesNotExist?: ReactNode;
 }
 
-const AddressDisplay = ({ name, className }: AddressDisplayProps) => {
+const AddressDisplay = ({
+  name,
+  className,
+  childrenIfAddressExists,
+  childrenIfAddressDoesNotExist,
+}: AddressDisplayProps) => {
   const network = networkId();
   const registryContractAddress = getRegistryAddress(network);
   const { contract } = useContract({
@@ -34,7 +41,7 @@ const AddressDisplay = ({ name, className }: AddressDisplayProps) => {
   });
 
   if (error !== undefined) {
-    console.log("Error displaying address for name", name, ":", error);
+    console.error("Error displaying address for name", name, ":", error);
   }
 
   let ownerAddr: string | undefined = undefined;
@@ -43,31 +50,39 @@ const AddressDisplay = ({ name, className }: AddressDisplayProps) => {
   }
 
   const nameElement = <div className="font-semibold inline">{name}</div>;
+  const addressIsRegistered = ownerAddr === "0";
 
   return (
-    <div className={className}>
-      {loading || (error === undefined && data === undefined) ? (
-        <div className="inline">Loading address for {nameElement}.</div>
-      ) : error ? (
-        <div className="inline">Error fetching address for {nameElement}.</div>
-      ) : (
-        <div className="inline">
-          {ownerAddr === "0" ? (
-            <div>{nameElement} is not registered.</div>
-          ) : (
-            <div>
-              {nameElement} belongs to address: {truncateAddress(ownerAddr)}.{" "}
-              <StyledExternalLink
-                href={buildExplorerUrlForAddress(ownerAddr)}
-                target="_blank"
-              >
-                View on Voyager
-              </StyledExternalLink>
-              .
-            </div>
-          )}
-        </div>
-      )}
+    <div>
+      <div className={className}>
+        {loading || (error === undefined && data === undefined) ? (
+          <div className="inline">Loading address for {nameElement}.</div>
+        ) : error ? (
+          <div className="inline">
+            Error fetching address for {nameElement}.
+          </div>
+        ) : (
+          <div className="inline">
+            {addressIsRegistered ? (
+              <div>{nameElement} is not registered.</div>
+            ) : (
+              <div>
+                {nameElement} belongs to address: {truncateAddress(ownerAddr)}.{" "}
+                <StyledExternalLink
+                  href={buildExplorerUrlForAddress(ownerAddr)}
+                  target="_blank"
+                >
+                  View on Voyager
+                </StyledExternalLink>
+                .
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {addressIsRegistered
+        ? childrenIfAddressDoesNotExist
+        : childrenIfAddressExists}
     </div>
   );
 };

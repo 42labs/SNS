@@ -1,10 +1,8 @@
 import React from "react";
 import ActionButton from "../components/ActionButton";
-import SNSHeader from "../components/SNSHeader";
 
 const IndexPage = () => (
   <div>
-    <SNSHeader />
     <div className="flex">
       <div className="text-center px-4 py-0 mx-auto mb-8 text-lg w-8/12">
         Starknet Name Service (SNS) is the name service for Starknet, similar to
