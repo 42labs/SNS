@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import React from "react";
+import React, { useState } from "react";
 import { FormEvent } from "react";
 
 interface NameInputProps {
@@ -27,18 +27,28 @@ export const NameInput = ({
   handleInputSubmit,
   placeHolderText,
 }: NameInputProps) => {
+  const [errorMessage, setErrorMessage] = useState<string>();
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const text = event.target[0].value;
-    handleInputSubmit(text);
-    event.target[0].value = "";
-    event.target[0].blur();
+    if (text.slice(-6) !== ".stark") {
+      setErrorMessage("Name must end in '.stark'");
+    } else {
+      setErrorMessage(undefined);
+      handleInputSubmit(text);
+      event.target[0].value = "";
+      event.target[0].blur();
+    }
   };
   return (
     <div className="flex my-2">
       <form onSubmit={onSubmit} className="m-auto w-full text-center">
+        {errorMessage && (
+          <div className="text-red-800">{"❌ " + " " + errorMessage}</div>
+        )}
         <StyledTextInput
           placeholder={placeHolderText ?? "Enter a .stark name"}
+          className={classNames({ "my-2": errorMessage !== undefined })}
         ></StyledTextInput>
         <input type="submit" className="hidden" />
       </form>
