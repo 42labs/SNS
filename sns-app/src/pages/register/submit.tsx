@@ -92,7 +92,11 @@ const SubmitPage = () => {
           : "Failed to register"}{" "}
         <div className="font-semibold inline">{name}</div>
         <div className="text-base my-2">
-          Want to register a different name? Click{" "}
+          Want to register{" "}
+          {error === undefined && registrySubmission && transactionId
+            ? "another"
+            : "a different"}{" "}
+          name? Click{" "}
           <StyledInternalLink href="/register">here</StyledInternalLink>.
         </div>
       </div>
@@ -129,6 +133,15 @@ const SubmitPage = () => {
               <td> {registrySubmission.registration_years} year</td>
             </table>
           </div>
+          <div>
+            Once the transaction is confirmed you can manage your name{" "}
+            <StyledInternalLink
+              href={"/manage/?name=" + registrySubmission.name}
+            >
+              here
+            </StyledInternalLink>
+            .
+          </div>
         </div>
       ) : (
         <div>
@@ -138,7 +151,7 @@ const SubmitPage = () => {
       )}
 
       {!registrySubmission && !transactionId && (
-        <div className="flex my-6">
+        <div className="flex">
           <form
             onSubmit={handleSubmit}
             className="m-auto w-full text-center flex-column"
