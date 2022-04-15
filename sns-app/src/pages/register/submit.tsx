@@ -11,6 +11,7 @@ import { buildExplorerUrlForTransaction } from "../../services/wallet.service";
 import { encodeStrAsListOfFelts, hashName } from "../../../utils/felt";
 import { RegistrySubmission } from "../../interfaces/record";
 import { useRegister } from "../../hooks/registry";
+import { DEFAULT_RESOLVER_CONTRACT_ADDRESS } from "../../hooks/starknet_address_resolver";
 
 const SubmitPage = () => {
   const [registrySubmission, setRegistrySubmission] =
@@ -34,9 +35,7 @@ const SubmitPage = () => {
     }
     const encodedName = encodeStrAsListOfFelts(name);
     const ownerAddress = event.target[0].value;
-    // const resolverAddress = event.target[1].value;
-    const resolverAddress =
-      "0x078e8b20d7b1da91a61360e087baf25948b88abcbe3b022e983f6bee8c06568f";
+    const resolverAddress = DEFAULT_RESOLVER_CONTRACT_ADDRESS; // event.target[1].value;
     const registrationYears = event.target[1].value;
     const args = [
       encodedName,

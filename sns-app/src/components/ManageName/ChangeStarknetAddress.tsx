@@ -31,9 +31,6 @@ const ChangeStarknetAddress = ({ name, record }: ManageNameProps) => {
   };
 
   const transactionId = setStarknetAddressResult.data;
-  console.log("setStarknetAddressResult", setStarknetAddressResult);
-
-  console.log("Resolver", record.resolverAddress);
 
   return (
     <div className="my-4 text-base">
@@ -46,7 +43,7 @@ const ChangeStarknetAddress = ({ name, record }: ManageNameProps) => {
               starknetAddress.starknetAddress === undefined)
               ? "Loading..."
               : starknetAddress.error !== undefined
-              ? "Error. Check the console for logs and try again later."
+              ? `Error getting current Starknet address (resolver ${record.resolverAddress}).`
               : truncateAddress(starknetAddress.starknetAddress)}{" "}
           </div>
           <div>
