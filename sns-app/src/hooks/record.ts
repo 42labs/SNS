@@ -5,7 +5,7 @@ import { RegistryRecord } from "../interfaces/record";
 import { useRegistryContract } from "./registry";
 
 export interface RecordHookT {
-  record: RegistryRecord;
+  record: RegistryRecord | undefined;
   loading: boolean;
   error: string;
 }

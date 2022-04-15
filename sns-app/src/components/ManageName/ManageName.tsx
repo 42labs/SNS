@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Button from "../../components/Button";
 import ChangeStarknetAddress from "./ChangeStarknetAddress";
-import ChangeOwnerAddress from "./ChangeOwnerAddress";
 import { RegistryRecord } from "../../interfaces/record";
 import { StyledExternalLink } from "../StyledLink";
 
@@ -28,10 +27,10 @@ const ManageName = ({ name, record }: ManageNameProps) => {
           <Button onClick={getClickHandler("Change Starknet Address")}>
             Change Starknet Address
           </Button>
-          <Button onClick={getClickHandler("Change Owner Address")}>
+          {/* <Button onClick={getClickHandler("Change Owner Address")}>
             Transfer Name
           </Button>
-          {/* <Button onClick={getClickHandler("Change Resolver Address")}>
+           <Button onClick={getClickHandler("Change Resolver Address")}>
               Change Resolver Address
             </Button>
             <Button>Register Subdomain (Coming Soon!)</Button>*/}
@@ -40,8 +39,6 @@ const ManageName = ({ name, record }: ManageNameProps) => {
         <div className="flex flex-col max-w-md mx-auto my-2 text-xl">
           {selectedAction === "Change Starknet Address" ? (
             <ChangeStarknetAddress name={name} record={record} />
-          ) : selectedAction === "Change Owner Address" ? (
-            <ChangeOwnerAddress name={name} record={record} />
           ) : (
             <div>Unknown action selected</div>
           )}

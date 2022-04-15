@@ -9,8 +9,8 @@ import {
 import { truncateAddress } from "../../services/address.service";
 import { buildExplorerUrlForTransaction } from "../../services/wallet.service";
 import { encodeStrAsListOfFelts, hashName } from "../../../utils/felt";
-import { useRegister } from "../../hooks/register";
 import { RegistrySubmission } from "../../interfaces/record";
+import { useRegister } from "../../hooks/registry";
 
 const SubmitPage = () => {
   const [registrySubmission, setRegistrySubmission] =

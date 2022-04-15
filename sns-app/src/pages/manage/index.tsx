@@ -27,7 +27,7 @@ const NameSection = ({ name, walletAddress, nameInput }: NameSectionProps) => {
         className="text-center mx-auto my-4"
         recordHook={recordHook}
       />
-      {recordHook &&
+      {recordHook.record &&
         walletAddress !== undefined &&
         recordHook.record.ownerAddress !== undefined &&
         (recordHook.record.ownerAddress === "0x0" ? (
