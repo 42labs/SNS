@@ -6,8 +6,14 @@ import {
   StyledExternalLink,
   StyledInternalLink,
 } from "../../components/StyledLink";
-import { getResolverAddress, truncateAddress } from "../../services/address.service";
-import { buildExplorerUrlForTransaction, networkId } from "../../services/wallet.service";
+import {
+  getResolverAddress,
+  truncateAddress,
+} from "../../services/address.service";
+import {
+  buildExplorerUrlForTransaction,
+  networkId,
+} from "../../services/wallet.service";
 import { encodeStrAsListOfFelts, hashName } from "../../../utils/felt";
 import { RegistrySubmission } from "../../interfaces/record";
 import { useRegister } from "../../hooks/registry";
