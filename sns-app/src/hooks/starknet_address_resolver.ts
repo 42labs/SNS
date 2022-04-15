@@ -8,9 +8,6 @@ import { toHex } from "starknet/utils/number";
 import { encodeStrAsListOfFelts } from "../../utils/felt";
 import ResolverAbi from "../abi/starknet_address_resolver.json";
 
-export const DEFAULT_RESOLVER_CONTRACT_ADDRESS =
-  "0x078e8b20d7b1da91a61360e087baf25948b88abcbe3b022e983f6bee8c06568f";
-
 export const useResolverContract = (resolverAddress: string) =>
   useContract({
     abi: ResolverAbi as Abi,

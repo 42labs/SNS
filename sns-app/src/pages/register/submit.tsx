@@ -6,12 +6,11 @@ import {
   StyledExternalLink,
   StyledInternalLink,
 } from "../../components/StyledLink";
-import { truncateAddress } from "../../services/address.service";
-import { buildExplorerUrlForTransaction } from "../../services/wallet.service";
+import { getResolverAddress, truncateAddress } from "../../services/address.service";
+import { buildExplorerUrlForTransaction, networkId } from "../../services/wallet.service";
 import { encodeStrAsListOfFelts, hashName } from "../../../utils/felt";
 import { RegistrySubmission } from "../../interfaces/record";
 import { useRegister } from "../../hooks/registry";
-import { DEFAULT_RESOLVER_CONTRACT_ADDRESS } from "../../hooks/starknet_address_resolver";
 
 const SubmitPage = () => {
   const [registrySubmission, setRegistrySubmission] =
@@ -35,7 +34,7 @@ const SubmitPage = () => {
     }
     const encodedName = encodeStrAsListOfFelts(name);
     const ownerAddress = event.target[0].value;
-    const resolverAddress = DEFAULT_RESOLVER_CONTRACT_ADDRESS; // event.target[1].value;
+    const resolverAddress = getResolverAddress(networkId()); // event.target[1].value;
     const registrationYears = event.target[1].value;
     const args = [
       encodedName,
