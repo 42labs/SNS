@@ -33,14 +33,8 @@ async def registered_contract(contract, name, address):
 
     encoded_name_array = encode_name(name)
 
-    try:
-        await contract.get_resolver_by_name(encoded_name_array).invoke()
-
-        raise Exception(
-            "Transaction to get resolver for unregistered name succeeded, but should not have."
-        )
-    except StarkException:
-        pass
+    result = await contract.get_resolver_by_name(encoded_name_array).invoke()
+    assert result.result.resolver_addr == 0
 
     await contract.register(encoded_name_array, address, address, 10).invoke()
 
@@ -90,14 +84,10 @@ async def test_register_subdomains(
 
     parent_namehash = hash_name(name)
 
-    try:
-        await registered_contract.get_record_by_name(encoded_subdomain_array).invoke()
-
-        raise Exception(
-            "Transaction to get record for unregistered subdomain succeeded, but should not have."
-        )
-    except StarkException:
-        pass
+    result = await registered_contract.get_record_by_name(
+        encoded_subdomain_array
+    ).invoke()
+    assert result.result.record.exist == 0
 
     try:
         await registered_contract.register(
