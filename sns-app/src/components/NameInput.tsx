@@ -13,7 +13,7 @@ export const StyledTextInput = (
     {...props}
     className={classNames(
       props.className,
-      "placeholder-purple-500 py-2 px-4 my-4 rounded-lg text-lg w-4/12 max-w-3xl min-w-fit"
+      "placeholder-purple-500 py-2 px-4 my-4 rounded-lg text-lg w-5/12 max-w-4xl min-w-fit"
     )}
   ></input>
 );

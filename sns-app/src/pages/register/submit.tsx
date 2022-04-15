@@ -148,7 +148,7 @@ const SubmitPage = () => {
                 className={inputClassName}
               ></StyledTextInput>*/}
             <StyledTextInput
-              placeholder={"Registration period (years)"}
+              placeholder={"Registration period (years, max 10)"}
               className={inputClassName}
             ></StyledTextInput>
             <input type="submit" className="hidden" />

@@ -25,7 +25,7 @@ const NameSection = ({ name, onInputSubmit }: NameSectionProps) => {
           <div className="text-center mb-2 mt-4">
             <ActionButton
               pagePath={"/register/submit?name=" + name}
-              text="Register it now"
+              text="Register it now 🚀"
             />
           </div>
         )}

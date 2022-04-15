@@ -59,7 +59,7 @@ const ChangeStarknetAddress = ({ name, record }: ManageNameProps) => {
         </div>
       ) : transactionId ? (
         <div className="my-4">
-          Congratulations, your registration has been submitted!
+          Congratulations, your update has been submitted!
           <div>
             The transaction ID is {truncateAddress(transactionId)}.{" "}
             <StyledExternalLink
