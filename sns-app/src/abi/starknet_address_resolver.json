@@ -1,0 +1,114 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "registry_address",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "interface_hash",
+                "type": "felt"
+            }
+        ],
+        "name": "supports_interface",
+        "outputs": [
+            {
+                "name": "interface_supported",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_registry_address",
+        "outputs": [
+            {
+                "name": "registry_address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "namehash",
+                "type": "felt"
+            }
+        ],
+        "name": "get_starknet_address",
+        "outputs": [
+            {
+                "name": "starknet_address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name_len",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt*"
+            }
+        ],
+        "name": "get_starknet_address_by_name",
+        "outputs": [
+            {
+                "name": "starknet_address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "namehash",
+                "type": "felt"
+            },
+            {
+                "name": "starknet_address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_starknet_address",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name_len",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt*"
+            },
+            {
+                "name": "starknet_address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_starknet_address_by_name",
+        "outputs": [],
+        "type": "function"
+    }
+]
