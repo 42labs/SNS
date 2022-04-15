@@ -3,5 +3,5 @@ package = "@netlify/plugin-nextjs"
 
 [build]
 base = "sns-app/"
-publish = "sns-app/.next"
+publish = ".next"
 command = "yarn build"
