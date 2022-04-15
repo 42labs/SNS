@@ -1,46 +1,22 @@
-import { useContract, useStarknetInvoke } from "@starknet-react/core";
 import { useRouter } from "next/router";
 import React, { FormEvent, useEffect, useState } from "react";
-import { Abi } from "starknet";
 import Button from "../../components/Button";
 import { StyledTextInput } from "../../components/NameInput";
 import {
   StyledExternalLink,
   StyledInternalLink,
 } from "../../components/StyledLink";
-import {
-  getRegistryAddress,
-  truncateAddress,
-} from "../../services/address.service";
-import {
-  buildExplorerUrlForTransaction,
-  networkId,
-} from "../../services/wallet.service";
-import RegistryAbi from "../../abi/registry.json";
-import { encodeStrAsListOfFelts } from "../../../utils/felt";
+import { truncateAddress } from "../../services/address.service";
+import { buildExplorerUrlForTransaction } from "../../services/wallet.service";
+import { encodeStrAsListOfFelts, hashName } from "../../../utils/felt";
+import { useRegister } from "../../hooks/register";
 import { RegistrySubmission } from "../../interfaces/record";
 
 const SubmitPage = () => {
   const [registrySubmission, setRegistrySubmission] =
     useState<RegistrySubmission>();
+  const { transactionId, loading, error, reset, invoke } = useRegister();
   const router = useRouter();
-  const network = networkId();
-  const registryContractAddress = getRegistryAddress(network);
-  const { contract } = useContract({
-    abi: RegistryAbi as Abi,
-    address: registryContractAddress,
-  });
-  const {
-    data: transactionId,
-    loading,
-    error,
-    reset,
-    invoke,
-  } = useStarknetInvoke<Array<string | string[]>>({
-    contract,
-    method: "register",
-  });
-
   const { name } = router.query;
 
   useEffect(() => {
@@ -58,15 +34,10 @@ const SubmitPage = () => {
     }
     const encodedName = encodeStrAsListOfFelts(name);
     const ownerAddress = event.target[0].value;
-    const resolverAddress = event.target[1].value;
-    const registrationYears = event.target[2].value;
-    setRegistrySubmission({
-      name: name,
-      owner_addr: ownerAddress,
-      resolver_addr: resolverAddress,
-      registration_years: registrationYears,
-      apex_namehash: "0",
-    });
+    // const resolverAddress = event.target[1].value;
+    const resolverAddress =
+      "0x078e8b20d7b1da91a61360e087baf25948b88abcbe3b022e983f6bee8c06568f";
+    const registrationYears = event.target[1].value;
     const args = [
       encodedName,
       ownerAddress,
@@ -74,6 +45,13 @@ const SubmitPage = () => {
       registrationYears,
     ];
     invoke({ args });
+    setRegistrySubmission({
+      name: name,
+      ownerAddress: ownerAddress,
+      resolverAddress: resolverAddress,
+      registrationYears: registrationYears,
+      apexNamehash: hashName(name), // TODO: Need to update once subdomains allowed
+    });
   };
 
   const inputClassName = "block mx-auto";
@@ -84,7 +62,7 @@ const SubmitPage = () => {
 
   return (
     <div className="text-center">
-      <div className="text-2xl my-8">
+      <div className="text-3xl my-8">
         {!loading && transactionId === undefined
           ? "Register"
           : error === undefined
@@ -124,13 +102,17 @@ const SubmitPage = () => {
                 <td> {registrySubmission.name}</td>
               </tr>
               <td className="pr-4">Owner:</td>
-              <td> {truncateAddress(registrySubmission.owner_addr)}</td>
+              <td> {truncateAddress(registrySubmission.ownerAddress)}</td>
               <tr>
                 <td className="pr-4">Resolver:</td>
-                <td> {truncateAddress(registrySubmission.resolver_addr)}</td>
+                <td> {truncateAddress(registrySubmission.resolverAddress)}</td>
               </tr>
               <td className="pr-4">Registration Period:</td>
-              <td> {registrySubmission.registration_years} year</td>
+              <td>
+                {" "}
+                {registrySubmission.registrationYears} year
+                {registrySubmission.registrationYears > 1 ? "s" : ""}
+              </td>
             </table>
           </div>
           <div>
@@ -143,13 +125,14 @@ const SubmitPage = () => {
             .
           </div>
         </div>
-      ) : (
+      ) : error !== undefined ? (
         <div>
           Error! Check the console for detailed logs, and try again in a few
           minutes.
         </div>
+      ) : (
+        <div />
       )}
-
       {!registrySubmission && !transactionId && (
         <div className="flex">
           <form
@@ -160,10 +143,11 @@ const SubmitPage = () => {
               placeholder={"Owner address"}
               className={inputClassName}
             ></StyledTextInput>
-            <StyledTextInput
-              placeholder={"Resolver address"}
-              className={inputClassName}
-            ></StyledTextInput>
+            {/*
+              <StyledTextInput
+                placeholder={"Resolver address"}
+                className={inputClassName}
+              ></StyledTextInput>*/}
             <StyledTextInput
               placeholder={"Registration period (years)"}
               className={inputClassName}

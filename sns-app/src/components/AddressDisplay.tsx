@@ -1,88 +1,54 @@
-import React, { ReactNode } from "react";
-import { useContract, useStarknetCall } from "@starknet-react/core";
-import {
-  getRegistryAddress,
-  truncateAddress,
-} from "../services/address.service";
-import {
-  buildExplorerUrlForAddress,
-  networkId,
-} from "../services/wallet.service";
-import RegistryAbi from "../abi/registry.json";
-import { Abi } from "starknet";
-import { encodeStrAsListOfFelts } from "../../utils/felt";
-import { bigNumberishArrayToDecimalStringArray } from "starknet/utils/number";
+import React from "react";
+import { truncateAddress } from "../services/address.service";
+import { buildExplorerUrlForAddress } from "../services/wallet.service";
 import { StyledExternalLink } from "./StyledLink";
+import { RecordHookT } from "../hooks/record";
 
 interface AddressDisplayProps {
   name: string;
+  recordHook: RecordHookT;
   className?: string;
-  childrenIfAddressExists?: ReactNode;
-  childrenIfAddressDoesNotExist?: ReactNode;
 }
 
 const AddressDisplay = ({
   name,
+  recordHook,
   className,
-  childrenIfAddressExists,
-  childrenIfAddressDoesNotExist,
 }: AddressDisplayProps) => {
-  const network = networkId();
-  const registryContractAddress = getRegistryAddress(network);
-  const { contract } = useContract({
-    abi: RegistryAbi as Abi,
-    address: registryContractAddress,
-  });
-  const args = [encodeStrAsListOfFelts(name)];
-  const { data, loading, error } = useStarknetCall({
-    contract,
-    method: "get_record_by_name",
-    args,
-  });
+  const { record, loading, error } = recordHook;
 
   if (error !== undefined) {
     console.error("Error displaying address for name", name, ":", error);
   }
 
-  let ownerAddr: string | undefined = undefined;
-  if (data !== undefined) {
-    ownerAddr = bigNumberishArrayToDecimalStringArray([data[0].owner_addr])[0];
-  }
-
   const nameElement = <div className="font-semibold inline">{name}</div>;
-  const addressIsRegistered = ownerAddr === "0";
+  const addressIsRegistered = record?.ownerAddress === "0x0";
 
   return (
-    <div>
-      <div className={className}>
-        {loading || (error === undefined && data === undefined) ? (
-          <div className="inline">Loading address for {nameElement}.</div>
-        ) : error ? (
-          <div className="inline">
-            Error fetching address for {nameElement}.
-          </div>
-        ) : (
-          <div className="inline">
-            {addressIsRegistered ? (
-              <div>{nameElement} is not registered.</div>
-            ) : (
-              <div>
-                {nameElement} belongs to address: {truncateAddress(ownerAddr)}.{" "}
-                <StyledExternalLink
-                  href={buildExplorerUrlForAddress(ownerAddr)}
-                  target="_blank"
-                >
-                  View on Voyager
-                </StyledExternalLink>
-                .
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      {addressIsRegistered
-        ? childrenIfAddressDoesNotExist
-        : childrenIfAddressExists}
+    <div className={className}>
+      {loading || (error === undefined && record === undefined) ? (
+        <div className="inline">Loading address for {nameElement}...</div>
+      ) : error !== undefined ? (
+        <div className="inline">Error fetching address for {nameElement}.</div>
+      ) : (
+        <div className="inline">
+          {addressIsRegistered ? (
+            <div>{nameElement} is not registered.</div>
+          ) : (
+            <div>
+              {nameElement} belongs to address:{" "}
+              {truncateAddress(record?.ownerAddress)}.{" "}
+              <StyledExternalLink
+                href={buildExplorerUrlForAddress(record?.ownerAddress)}
+                target="_blank"
+              >
+                View on Voyager
+              </StyledExternalLink>
+              .
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

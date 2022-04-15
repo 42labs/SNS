@@ -2,11 +2,6 @@ import classNames from "classnames";
 import React, { useState } from "react";
 import { FormEvent } from "react";
 
-interface NameInputProps {
-  handleInputSubmit: (name: string) => void;
-  placeHolderText?: string;
-}
-
 export const StyledTextInput = (
   props: React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
@@ -17,14 +12,19 @@ export const StyledTextInput = (
     type="text"
     {...props}
     className={classNames(
-      "placeholder-purple-500 py-2 px-4 my-4 rounded-lg text-lg w-4/12 max-w-3xl min-w-fit",
-      props.className
+      props.className,
+      "placeholder-purple-500 py-2 px-4 my-4 rounded-lg text-lg w-4/12 max-w-3xl min-w-fit"
     )}
   ></input>
 );
 
+interface NameInputProps {
+  onInputSubmit: (name: string) => void;
+  placeHolderText?: string;
+}
+
 export const NameInput = ({
-  handleInputSubmit,
+  onInputSubmit,
   placeHolderText,
 }: NameInputProps) => {
   const [errorMessage, setErrorMessage] = useState<string>();
@@ -33,9 +33,12 @@ export const NameInput = ({
     const text = event.target[0].value;
     if (text.slice(-6) !== ".stark") {
       setErrorMessage("Name must end in '.stark'");
+    } else if (text.split(".").length > 2) {
+      // Should only have one "." in it, i.e. no subdomains
+      setErrorMessage("Subdomains are currently not supported");
     } else {
       setErrorMessage(undefined);
-      handleInputSubmit(text);
+      onInputSubmit(text);
       event.target[0].value = "";
       event.target[0].blur();
     }
@@ -55,3 +58,14 @@ export const NameInput = ({
     </div>
   );
 };
+
+interface NameInputWithPromptProps extends NameInputProps {
+  prompt: string;
+}
+
+export const NameInputWithPrompt = (props: NameInputWithPromptProps) => (
+  <div className="mb-12">
+    <div className="mt-8 text-xl text-center">{props.prompt}</div>
+    <NameInput {...props} />
+  </div>
+);

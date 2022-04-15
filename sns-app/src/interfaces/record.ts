@@ -1,10 +1,10 @@
-export interface Record {
-  owner_addr: string;
-  resolver_addr: string;
-  apex_namehash: string;
+export interface RegistryRecord {
+  ownerAddress: string;
+  resolverAddress: string;
+  apexNamehash: string;
 }
 
-export interface RegistrySubmission extends Record {
+export interface RegistrySubmission extends RegistryRecord {
   name: string;
-  registration_years: number;
+  registrationYears: number;
 }
