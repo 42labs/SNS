@@ -38,7 +38,7 @@ export const NameInput = ({
       setErrorMessage("Subdomains are currently not supported");
     } else {
       setErrorMessage(undefined);
-      onInputSubmit(text);
+      onInputSubmit(text.toLocaleLowerCase());
       event.target[0].value = "";
       event.target[0].blur();
     }
