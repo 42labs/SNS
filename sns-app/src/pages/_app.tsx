@@ -51,7 +51,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, []);
 
   const handleConnectClick = async () => {
-    console.log("CLICK CONNECT");
     await connectWallet();
     setIsConnected(isWalletConnected());
     setAddress(await walletAddress());

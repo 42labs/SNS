@@ -1,14 +1,14 @@
-# Starknet Naming Service (SNS)
+# Starknet Name Service (SNS)
 
 # About
 
-See this [overview](https://rocky-volleyball-654.notion.site/Starknet-Naming-Service-RFQ-c206e058e8b44287b99a0c0e29910577) for more information about the motivation and design choices behind the project.
+See this [overview](https://www.notion.so/Starknet-Name-Service-SNS-c206e058e8b44287b99a0c0e29910577) for more information about the motivation and design choices behind the project.
 
 ## How to Use SNS
 
-You use the SNS-provided web application to register your domain [name](TODO).
+You use the SNS-provided web application to register your domain [name](https://sunny-salamander-6f6c7e.netlify.app/).
 
-The Registry is deployed at address TODO, see it on Voyager here. The SampleResolver is at address TODO, which you can inspect on Voyager at this link.
+The Registry is deployed at address `0x05ab97cc647943dd0354b7b9073ceed535c3fdc24cc8fbd072979a7897982503`, see it on Voyager [here](https://goerli.voyager.online/contract/0x05ab97cc647943dd0354b7b9073ceed535c3fdc24cc8fbd072979a7897982503). The SampleResolver is at address `0x071597a3a4a96d7ed00d4643cd44ea7123c00756ebe0ccc8694ea0a0db2a7635#writeContract`, which you can inspect on Voyager at [this link](https://goerli.voyager.online/contract/0x071597a3a4a96d7ed00d4643cd44ea7123c00756ebe0ccc8694ea0a0db2a7635#writeContract).
 
 # Usage
 
