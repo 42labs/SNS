@@ -2,7 +2,7 @@
 
 # About
 
-See this [overview](https://www.notion.so/Starknet-Name-Service-SNS-c206e058e8b44287b99a0c0e29910577) for more information about the motivation and design choices behind the project.
+See this [overview](https://42labs-xyz.notion.site/Starknet-Name-Service-SNS-979ca371ad324ce2a566c022c98c1871) for more information about the motivation and design choices behind the project.
 
 ## How to Use SNS
 
